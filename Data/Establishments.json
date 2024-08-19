@@ -1,0 +1,20 @@
+[
+	{
+		"PartitionKey": "Restaurant",
+		"RowKey": "f306de11-d089-4562-92a2-fd8f771f96d7",
+		"Name": "Amaro Bistro",
+		"City": "Bothell"
+	},
+	{
+		"PartitionKey": "Restaurant",
+		"RowKey": "f04a6680-5f1d-4548-a1c8-90ec0a0b65f6",
+		"Name": "Bine Beer & food, the",
+		"City": "Bothell"
+	},
+	{
+		"PartitionKey": "Restaurant",
+		"RowKey": "43f35b1d-26e4-47c7-9406-3682b04cb8ae",
+		"Name": "Feast",
+		"City": "Kirkland"
+	}
+]
