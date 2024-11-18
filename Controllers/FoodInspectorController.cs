@@ -23,6 +23,9 @@ namespace FoodInspectorAPI.Controllers
             _inspectionRecordsProvider = inspectionRecordsProvider;
             _storageTableProvider = storageTableProvider;
             _logger = logger;
+
+            // Populate the table of establishments from the JSON file
+            _storageTableProvider.CreateEstablishmentsSet().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -32,9 +35,6 @@ namespace FoodInspectorAPI.Controllers
         [HttpGet("DefaultQueries/InspectionsRaw")]
         public async Task<IActionResult> GetInspectionsRaw()
         {
-            // Populate the table of establishments from the text file
-            await _storageTableProvider.CreateEstablishmentsSet();
-
             // Read the set of establishment properties from the table to query
             List<EstablishmentsModel>? establishmentsList = await _storageTableProvider.GetEstablishmentsSet();
 
@@ -44,7 +44,7 @@ namespace FoodInspectorAPI.Controllers
                 return StatusCode(500, "An unexpected error occurred.");
             }
 
-            // Query the API to obtain the food inspection records
+            // Query the inspection data API to obtain the food inspection records
             List<InspectionRecordRaw> inspectionRecords = await _inspectionRecordsProvider.GetInspections(establishmentsList);
 
             return Ok(inspectionRecords);
@@ -58,9 +58,6 @@ namespace FoodInspectorAPI.Controllers
         [HttpGet("DefaultQueries/InspectionsAggregatedAll")]
         public async Task<IActionResult> GetInspectionsAggregated()
         {
-            // Populate the table of establishments from the text file
-            await _storageTableProvider.CreateEstablishmentsSet();
-
             // Read the set of establishment properties from the table to query
             List<EstablishmentsModel>? establishmentsList = await _storageTableProvider.GetEstablishmentsSet();
 
@@ -126,9 +123,6 @@ namespace FoodInspectorAPI.Controllers
         [HttpGet("DefaultQueries/InspectionsAggregatedLatest")]
         public async Task<IActionResult> GetInspectionsLatest()
         {
-            // Populate the table of establishments from the text file
-            await _storageTableProvider.CreateEstablishmentsSet();
-
             // Read the set of establishment properties from the table to query
             List<EstablishmentsModel>? establishmentsList = await _storageTableProvider.GetEstablishmentsSet();
 

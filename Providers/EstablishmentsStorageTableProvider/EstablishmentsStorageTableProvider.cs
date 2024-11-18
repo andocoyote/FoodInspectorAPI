@@ -66,7 +66,10 @@ namespace FoodInspector.Providers
         //  iterate over each table record object and call the Food Inspections API
         //  write to SQL
 
-
+        /// <summary>
+        /// Converts the JSON file of establishments to a table in storage.
+        /// </summary>
+        /// <returns></returns>
         public async Task CreateEstablishmentsSet()
         {
             if (_tableClient == null)
@@ -75,6 +78,7 @@ namespace FoodInspector.Providers
                 return;
             }
 
+            // Read the JSON file containing the establishment data
             List<EstablishmentsModel>? establishments = _establishmentsProvider.ReadEstablishmentsFile();
 
             if (establishments == null)
@@ -83,6 +87,7 @@ namespace FoodInspector.Providers
                 return;
             }
 
+            // Write a record or each establishment to the table in storage
             foreach (EstablishmentsModel establishment in establishments)
             {
                 _logger.LogInformation(
@@ -106,7 +111,10 @@ namespace FoodInspector.Providers
             }
         }
 
-        // Never return null when a Task is expected, but can return null wrapped in a Task
+        /// <summary>
+        /// Read the establishent data from the table in storage and return a list of EstablishmentsModel objects.
+        /// </summary>
+        /// <returns>List of EstablishmentsModel objects</returns>
         public async Task<List<EstablishmentsModel>?> GetEstablishmentsSet()
         {
             if (_tableClient == null)
@@ -125,6 +133,7 @@ namespace FoodInspector.Providers
                 establishmentsList.Add(establishment);
             }
 
+            // Never return null when a Task is expected, but can return null wrapped in a Task
             return establishmentsList;
         }
     }
