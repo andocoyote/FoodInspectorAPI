@@ -15,18 +15,21 @@ namespace FoodInspectorAPI
 
             // Configuration sources
             builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            var environmentName = builder.Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            string environmentName = builder.Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") ?? "Development";
             builder.Configuration.AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true);
+
+            string storageUrl = $"https://{builder.Configuration.GetValue<string>("Storage:TableStorageAccountName")}.table.core.windows.net/";
+            string keyVaultUrl = $"https://{builder.Configuration.GetValue<string>("KeyVault:VaultName")}.vault.azure.net/";
+
             builder.Configuration.AddAzureKeyVault(
-                new Uri($"https://{builder.Configuration.GetValue<string>("KeyVault:VaultName")}.vault.azure.net/"),
+                new Uri(keyVaultUrl),
                 new DefaultAzureCredential());
 
             // Azure clients
             builder.Services.AddAzureClients(clientBuilder =>
             {
-                string keyVaultUri = "https://kv-food-inspector.vault.azure.net/";
-                clientBuilder.AddSecretClient(new Uri(keyVaultUri));
-                clientBuilder.AddTableServiceClient(new Uri("https://stdiwithazuresdk.table.core.windows.net"));
+                clientBuilder.AddSecretClient(new Uri(keyVaultUrl));
+                clientBuilder.AddTableServiceClient(new Uri(storageUrl));
 
                 clientBuilder.UseCredential(new DefaultAzureCredential());
             });

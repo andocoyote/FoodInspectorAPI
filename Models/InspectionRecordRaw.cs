@@ -2,7 +2,7 @@
 
 namespace FoodInspectorAPI.Models
 {
-    public class InspectionRecord
+    public class InspectionRecordRaw
     {
         public int Id { get; set; }
 

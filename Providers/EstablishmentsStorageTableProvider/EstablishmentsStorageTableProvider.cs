@@ -65,6 +65,8 @@ namespace FoodInspector.Providers
         // Inspections service:
         //  iterate over each table record object and call the Food Inspections API
         //  write to SQL
+
+
         public async Task CreateEstablishmentsSet()
         {
             if (_tableClient == null)

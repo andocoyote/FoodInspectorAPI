@@ -53,9 +53,9 @@ namespace FoodInspectorAPI.Providers
         /// Returns null if an exception occurs.
         /// Returns an empty list if no data is found.
         /// </returns>
-        public async Task<List<InspectionRecord>> GetInspections(List<EstablishmentsModel> establishmentsModels)
+        public async Task<List<InspectionRecordRaw>> GetInspections(List<EstablishmentsModel> establishmentsModels)
         {
-            List<InspectionRecord> list = new List<InspectionRecord>();
+            List<InspectionRecordRaw> list = new List<InspectionRecordRaw>();
 
             try
             {
@@ -82,7 +82,7 @@ namespace FoodInspectorAPI.Providers
 
                     // Call the API to obtain the data
                     // The HttpClient does the actual calls to get the data.  CommonServiceLayerProvide just tells HttpClient what to do
-                    List<InspectionRecord>? results = await MakeGetRequestAsync(inspectionRequest.Query);
+                    List<InspectionRecordRaw>? results = await MakeGetRequestAsync(inspectionRequest.Query);
 
                     if (results == null) continue;
 
@@ -111,9 +111,9 @@ namespace FoodInspectorAPI.Providers
         /// Returns null if an exception occurs.
         /// Returns an empty list if no data is found.
         /// </returns>
-        public async Task<List<InspectionRecord>> GetInspections(string name, string city, string startdate)
+        public async Task<List<InspectionRecordRaw>> GetInspections(string name, string city, string startdate)
         {
-            List<InspectionRecord> list = new List<InspectionRecord>();
+            List<InspectionRecordRaw> list = new List<InspectionRecordRaw>();
 
             try
             {
@@ -127,7 +127,7 @@ namespace FoodInspectorAPI.Providers
                 {
                     // Call the API to obtain the data
                     // The HttpClient does the actual calls to get the data.  CommonServiceLayerProvide just tells HttpClient what to do
-                    list = await MakeGetRequestAsync(inspectionRequest.Query) ?? new List<InspectionRecord>();
+                    list = await MakeGetRequestAsync(inspectionRequest.Query) ?? new List<InspectionRecordRaw>();
 
                     AssignViolationRecordIds(list);
                 }
@@ -177,7 +177,7 @@ namespace FoodInspectorAPI.Providers
         }
 
         // Never return null when a Task is expected, but can return null wrapped in a Task
-        private async Task<List<InspectionRecord>?> MakeGetRequestAsync(
+        private async Task<List<InspectionRecordRaw>?> MakeGetRequestAsync(
             string relativeUri)
         {
             // Make the API call
@@ -186,16 +186,16 @@ namespace FoodInspectorAPI.Providers
 
             // Parse the result
             string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            List<InspectionRecord>? result = JsonSerializer.Deserialize<List<InspectionRecord>>(content);
+            List<InspectionRecordRaw>? result = JsonSerializer.Deserialize<List<InspectionRecordRaw>>(content);
 
             return result;
         }
 
-        private void AssignViolationRecordIds(IEnumerable<InspectionRecord> list)
+        private void AssignViolationRecordIds(IEnumerable<InspectionRecordRaw> list)
         {
             // Group all InspectionRecord entries by Inspection_Serial_Num because each inspection
             // can result in zero or more violations and we want to keep them grouped together per establishment
-            List<IGrouping<string?, InspectionRecord>> ordered = list.GroupBy(x => x.InspectionSerialNum).ToList();
+            List<IGrouping<string?, InspectionRecordRaw>> ordered = list.GroupBy(x => x.InspectionSerialNum).ToList();
 
             // Add a zero-based ID to each inspection entry.  If an inspection resulted in multiple
             // violations, each one will have an ID such as 0, 1, 2, ... , n

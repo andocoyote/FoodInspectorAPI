@@ -4,7 +4,7 @@ namespace FoodInspectorAPI.Providers
 {
     public interface IInspectionRecordsProvider
     {
-        Task<List<InspectionRecord>> GetInspections(List<EstablishmentsModel> establishmentsModels);
-        Task<List<InspectionRecord>> GetInspections(string name, string city, string date);
+        Task<List<InspectionRecordRaw>> GetInspections(List<EstablishmentsModel> establishmentsModels);
+        Task<List<InspectionRecordRaw>> GetInspections(string name, string city, string date);
     }
 }

@@ -2,6 +2,8 @@
 using FoodInspectorAPI.Models;
 using FoodInspectorAPI.Providers;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Reflection.Emit;
 
 namespace FoodInspectorAPI.Controllers
 {
@@ -23,8 +25,12 @@ namespace FoodInspectorAPI.Controllers
             _logger = logger;
         }
 
-        [HttpGet("default/inspections")]
-        public async Task<IActionResult> GetInspections()
+        /// <summary>
+        /// Query inspection data for all establishments and inspections since StartDate
+        /// </summary>
+        /// <returns>JSON list InspectionRecordRaw items</returns>
+        [HttpGet("DefaultQueries/InspectionsRaw")]
+        public async Task<IActionResult> GetInspectionsRaw()
         {
             // Populate the table of establishments from the text file
             await _storageTableProvider.CreateEstablishmentsSet();
@@ -39,19 +45,158 @@ namespace FoodInspectorAPI.Controllers
             }
 
             // Query the API to obtain the food inspection records
-            List<InspectionRecord> inspectionRecords = await _inspectionRecordsProvider.GetInspections(establishmentsList);
+            List<InspectionRecordRaw> inspectionRecords = await _inspectionRecordsProvider.GetInspections(establishmentsList);
 
             return Ok(inspectionRecords);
         }
 
-        [HttpGet("userconfigured/inspections")]
-        public async Task<IActionResult> GetInspections(
+        /// <summary>
+        /// Query inspection data for all establishments and inspections since StartDate.
+        /// Aggregate data for each inspection of an establishment into an InspectionRecordAggregated object.
+        /// </summary>
+        /// <returns>JSON list InspectionRecordAggregated items</returns>
+        [HttpGet("DefaultQueries/InspectionsAggregatedAll")]
+        public async Task<IActionResult> GetInspectionsAggregated()
+        {
+            // Populate the table of establishments from the text file
+            await _storageTableProvider.CreateEstablishmentsSet();
+
+            // Read the set of establishment properties from the table to query
+            List<EstablishmentsModel>? establishmentsList = await _storageTableProvider.GetEstablishmentsSet();
+
+            if (establishmentsList == null)
+            {
+                _logger.LogError("EstablishmentsSet is null.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+
+            // Query the API to obtain the food inspection records
+            List<InspectionRecordRaw> inspectionRecords = await _inspectionRecordsProvider.GetInspections(establishmentsList);
+
+            if (inspectionRecords == null)
+            {
+                _logger.LogError("inspectionRecords is null.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+
+            // Create a list of InspectionRecordAggregated
+            List<InspectionRecordAggregated> recordsAggregated = new List<InspectionRecordAggregated>();
+
+            // Get the list of distinct extablishment names from inspectionRecords
+            var distinctEstablishments = inspectionRecords.DistinctBy(rec => rec.Name).Select(rec => new InspectionRecordAggregated
+            {
+                Name = rec.Name,
+                Description = rec.Description,
+                Address = rec.Address,
+                City = rec.City,
+                ZipCode = rec.ZipCode,
+                InspectionBusinessName = rec.InspectionBusinessName,
+                InspectionType = rec.InspectionType,
+                InspectionScore = rec.InspectionScore,
+                InspectionResult = rec.InspectionResult,
+                InspectionClosedBusiness = rec.InspectionClosedBusiness,
+                InspectionSerialNum = rec.InspectionSerialNum
+            }).ToList();
+
+            // For each distinct establishment, get all records for that establishment
+            foreach (InspectionRecordAggregated record in distinctEstablishments)
+            {
+                var records = inspectionRecords.Where(rec => rec.Name == record.Name).ToList();
+                var maxDate = records.Max(rec => rec.InspectionDate);
+                record.InspectionDate = inspectionRecords.Where(rec => rec.InspectionDate == maxDate).First().InspectionDate;
+
+                // For each record for each distinct establishment, add a violation to the Violations list
+                record.Violations = records.Where(rec => rec.InspectionDate == maxDate).ToList().Select(rec => new Violation
+                {
+                    ViolationType = rec.ViolationType,
+                    ViolationDescription = rec.ViolationDescription,
+                    ViolationPoints = rec.ViolationPoints
+                }).ToList();
+            }
+
+            return Ok(distinctEstablishments);
+        }
+
+        /// <summary>
+        /// Query inspection data for all establishments and inspections since StartDate.
+        /// Aggregate data for each inspection of an establishment into an InspectionRecordAggregated object.
+        /// For each establishment, return only the data for the most recent inspection.
+        /// </summary>
+        /// <returns>JSON list InspectionRecordAggregated items</returns>
+        [HttpGet("DefaultQueries/InspectionsAggregatedLatest")]
+        public async Task<IActionResult> GetInspectionsLatest()
+        {
+            // Populate the table of establishments from the text file
+            await _storageTableProvider.CreateEstablishmentsSet();
+
+            // Read the set of establishment properties from the table to query
+            List<EstablishmentsModel>? establishmentsList = await _storageTableProvider.GetEstablishmentsSet();
+
+            if (establishmentsList == null)
+            {
+                _logger.LogError("EstablishmentsSet is null.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+
+            // Query the API to obtain the food inspection records
+            List<InspectionRecordRaw> inspectionRecords = await _inspectionRecordsProvider.GetInspections(establishmentsList);
+
+            if (inspectionRecords == null)
+            {
+                _logger.LogError("inspectionRecords is null.");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+
+            // Create a list of InspectionRecordAggregated
+            List<InspectionRecordAggregated> recordsAggregated = new List<InspectionRecordAggregated>();
+
+            // Get the list of distinct extablishment names from inspectionRecords
+            var distinctEstablishments = inspectionRecords.DistinctBy(rec => rec.Name).Select(rec => new InspectionRecordAggregated
+            {
+                Name = rec.Name,
+                Description = rec.Description,
+                Address = rec.Address,
+                City = rec.City,
+                ZipCode = rec.ZipCode,
+                InspectionBusinessName = rec.InspectionBusinessName,
+                InspectionType = rec.InspectionType,
+                InspectionScore = rec.InspectionScore,
+                InspectionResult = rec.InspectionResult,
+                InspectionClosedBusiness = rec.InspectionClosedBusiness,
+                InspectionSerialNum = rec.InspectionSerialNum
+            }).ToList();
+
+            // For each distinct establishment, get all records for that establishment
+            foreach (InspectionRecordAggregated record in distinctEstablishments)
+            {
+                var records = inspectionRecords.Where(rec => rec.Name == record.Name).ToList();
+                var maxDate = records.Max(rec => rec.InspectionDate);
+                record.InspectionDate = inspectionRecords.Where(rec => rec.InspectionDate == maxDate).First().InspectionDate;
+
+                // For each record for each distinct establishment, add a violation to the Violations list
+                record.Violations = records.Where(rec => rec.InspectionDate == maxDate).ToList().Select(rec => new Violation
+                {
+                    ViolationType = rec.ViolationType,
+                    ViolationDescription = rec.ViolationDescription,
+                    ViolationPoints = rec.ViolationPoints
+                }).ToList();
+            }
+
+            return Ok(distinctEstablishments);
+        }
+
+        /// <summary>
+        /// Query inspection data for the specified establishment and inspections since StartDate
+        /// </summary>
+        /// <returns>JSON list InspectionRecordRaw items</returns>
+        [HttpGet("UserQueries/InspectionsRaw")]
+        public async Task<IActionResult> GetInspectionsRaw(
             [FromQuery] string name,
             [FromQuery] string city,
             [FromQuery] string startdate)
         {
             // Query the API to obtain the food inspection records
-            List<InspectionRecord> inspectionRecords =
+            List<InspectionRecordRaw> inspectionRecords =
                 await _inspectionRecordsProvider.GetInspections(name, city, startdate);
 
             return Ok(inspectionRecords);
