@@ -94,6 +94,7 @@ namespace FoodInspector.Providers
                     "[CreateEstablishmentsSet]: " +
                     $"PartitionKey: {establishment.PartitionKey} " +
                     $"RowKey: {establishment.RowKey} " +
+                    $"ProgramIdentifier: {establishment.ProgramIdentifier} " +
                     $"Name: {establishment.Name} " +
                     $"City: {establishment.City}");
 
@@ -101,6 +102,7 @@ namespace FoodInspector.Providers
                 {
                     ["PartitionKey"] = establishment.PartitionKey ?? string.Empty,
                     ["RowKey"] = establishment.RowKey ?? string.Empty,
+                    ["ProgramIdentifier"] = establishment.ProgramIdentifier ?? string.Empty,
                     ["Name"] = establishment.Name ?? string.Empty,
                     ["City"] = establishment.City ?? string.Empty
                 };

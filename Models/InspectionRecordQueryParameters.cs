@@ -4,8 +4,8 @@
     // [DataContract]
     public class InspectionRecordQueryParameters
     {
-        // What does DataContract and DataMember do?
         // [DataMember]
+        public string? Program_Identifier { get; set; } = null;
         public string? Name { get; set; } = null;
         public string? Inspection_Date { get; set; } = null;
         public string? City { get; set; } = null;

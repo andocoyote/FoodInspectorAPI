@@ -1,4 +1,3 @@
-
 using Azure.Identity;
 using FoodInspector.Providers;
 using FoodInspectorAPI.ConfigurationOptions;
