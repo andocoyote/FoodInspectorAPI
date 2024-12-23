@@ -1,4 +1,5 @@
 ﻿using FoodInspectorAPI.Models;
+using FoodInspectorModels;
 
 namespace FoodInspectorAPI.Providers
 {

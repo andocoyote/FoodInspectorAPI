@@ -1,11 +1,9 @@
 ﻿using FoodInspector.Providers;
 using FoodInspectorAPI.ConfigurationOptions;
 using FoodInspectorAPI.Models;
+using FoodInspectorModels;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text.Json;
-using System.Web;
 
 namespace FoodInspectorAPI.Providers
 {

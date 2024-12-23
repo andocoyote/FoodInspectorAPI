@@ -1,6 +1,6 @@
 ﻿using FoodInspector.Providers;
-using FoodInspectorAPI.Models;
 using FoodInspectorAPI.Providers;
+using FoodInspectorModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodInspectorAPI.Controllers
